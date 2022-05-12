@@ -23,14 +23,13 @@ async function createWindow() {
       preload: join(__dirname, '../preload/index.cjs'),
       nodeIntegration: true,
       contextIsolation: false,
-      devTools: process.env['NODE_ENV'] === 'development',
     },
     minWidth: 1000,
     minHeight: 900,
   })
-  win.removeMenu()
 
   if (app.isPackaged) {
+    win.removeMenu()
     win.loadFile(join(__dirname, '../renderer/index.html'))
   } else {
     // 🚧 Use ['ENV_NAME'] avoid vite:define plugin

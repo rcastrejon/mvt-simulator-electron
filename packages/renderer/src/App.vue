@@ -1,55 +1,170 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import HelloWorld from './components/HelloWorld.vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { FreeArea, createFreeAreaFromPartition } from './models/FreeArea'
+import { Partition } from './models/Partition'
+import { OperatingSystem } from './models/OperatingSystem'
+import { Process } from './models/Process'
+
+import ProcessesTable from './components/ProcessesTable.vue'
+import FreeAreasTable from './components/FreeAreasTable.vue'
+import PartitionsTable from './components/PartitionsTable.vue'
+import MemoryDiagram from './components/MemoryDiagram.vue'
+
+const processes = [
+  new Process('A', 8, 1, 7),
+  new Process('B', 14, 2, 7),
+  new Process('C', 18, 3, 4),
+  new Process('D', 6, 4, 6),
+  new Process('E', 14, 5, 5),
+]
+
+const step = ref(0)
+const message = ref('Ready...')
+
+const availableProcesses = reactive([...processes])
+
+const memoryLayout = ref({
+  operatingSystem: new OperatingSystem(0, 10),
+  freeAreas: [new FreeArea(10, 54)],
+  partitions: Array<Partition>(),
+})
+
+const orderedMemoryLayout = computed(() => {
+  return {
+    freeAreas: memoryLayout.value.freeAreas.sort(
+      (a, b) => a.location - b.location
+    ),
+    partitions: memoryLayout.value.partitions.sort(
+      (a, b) => a.location - b.location
+    ),
+  }
+})
+
+watch(step, (newStep) => {
+  const processToAllocate = availableProcesses.find(
+    (p) => p.arrivalStep <= newStep
+  )
+  if (processToAllocate) {
+    if (allocateProcess(processToAllocate)) {
+      const idx = availableProcesses.indexOf(processToAllocate)
+      availableProcesses.splice(idx, 1)
+      message.value = `Allocated process "${processToAllocate.id}"`
+      return
+    }
+    message.value = `Process "${processToAllocate.id}" could not be allocated, no space left`
+  }
+
+  const partitionToDeallocate = memoryLayout.value.partitions.find(
+    (p) => p.process.arrivalStep + p.process.durationSteps - 1 <= newStep
+  )
+  if (partitionToDeallocate) {
+    deallocatePartition(partitionToDeallocate)
+    message.value = `Deallocated process "${partitionToDeallocate.process.id}"`
+  }
+})
+
+function allocateProcess(process: Process) {
+  const freeArea = memoryLayout.value.freeAreas.find(
+    (fa) => fa.size >= process.size
+  )
+  if (!freeArea) {
+    return false
+  }
+
+  const [partition, shouldDisposeOriginal] =
+    freeArea.allocateProcessAndSplitIntoPartition(process)
+  if (shouldDisposeOriginal)
+    memoryLayout.value.freeAreas = memoryLayout.value.freeAreas.filter(
+      (fa) => fa !== freeArea
+    )
+
+  memoryLayout.value.partitions.push(partition)
+  return true
+}
+
+function deallocatePartition(partition: Partition) {
+  memoryLayout.value.partitions = memoryLayout.value.partitions.filter(
+    (p) => p !== partition
+  )
+
+  const newFreeArea = createFreeAreaFromPartition(partition)
+  const [leftContiguous, rightContiguous] = newFreeArea.getContiguous(
+    memoryLayout.value.freeAreas
+  )
+
+  if (!(leftContiguous || rightContiguous)) {
+    memoryLayout.value.freeAreas.push(newFreeArea)
+    return
+  }
+
+  const residualArea = newFreeArea.mergeIntoContiguousFreeAreas(
+    leftContiguous,
+    rightContiguous
+  )
+
+  if (residualArea)
+    memoryLayout.value.freeAreas = memoryLayout.value.freeAreas.filter(
+      (fa) => fa !== residualArea
+    )
+}
 </script>
 
 <template>
-  <div class="logo-box">
-    <img style="height:140px;" src="./assets/electron.png" >
-    <span/>
-    <img style="height:140px;" src="./assets/vite.svg" >
-    <span/>
-    <img style="height:140px;" src="./assets/vue.png" >
-  </div>
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
-  <div class="static-public">
-    Place static files into the <code>src/renderer/public</code> folder
-    <img style="width:90px;" :src="'./images/node.png'" >
+  <div class="container min-vh-100 vstack">
+    <div class="row">
+      <div class="col">
+        <h4 class="text-center">Simulation of Memory Allocation with MVT</h4>
+        <ProcessesTable :processes="processes" />
+      </div>
+    </div>
+    <div class="row flex-grow-1">
+      <div class="col">
+        <h5>Free areas table</h5>
+        <FreeAreasTable :free-areas="orderedMemoryLayout.freeAreas" />
+        <h5>Partition table</h5>
+        <PartitionsTable :partitions="orderedMemoryLayout.partitions" />
+      </div>
+      <div class="col">
+        <div class="vstack h-100">
+          <h5 class="text-sm-center">Memory diagram</h5>
+          <MemoryDiagram
+            :free-areas="memoryLayout.freeAreas"
+            :partitions="memoryLayout.partitions"
+            :operating-system="memoryLayout.operatingSystem"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="vstack mt-2 align-items-center">
+          <div>
+            <button
+              v-if="step < 1"
+              type="button"
+              class="btn btn-success btn-sm"
+              @click="step++"
+            >
+              Start
+            </button>
+            <button
+              v-else
+              type="button"
+              class="btn btn-primary btn-sm"
+              @click="step++"
+            >
+              Step {{ step }}
+            </button>
+          </div>
+          <span>{{ message }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-.logo-box {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-}
-
-.logo-box span {
-  width: 74px;
-}
-
-.static-public {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.static-public code {
-  background-color: #eee;
-  padding: 2px 4px;
-  margin: 0 4px;
-  border-radius: 4px;
-  color: #304455;
+body {
+  user-select: none;
 }
 </style>

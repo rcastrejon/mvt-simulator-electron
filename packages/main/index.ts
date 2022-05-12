@@ -18,13 +18,17 @@ let win: BrowserWindow | null = null
 
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'MVT Simulator',
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       nodeIntegration: true,
       contextIsolation: false,
+      devTools: process.env['NODE_ENV'] === 'development',
     },
+    minWidth: 1000,
+    minHeight: 900,
   })
+  win.removeMenu()
 
   if (app.isPackaged) {
     win.loadFile(join(__dirname, '../renderer/index.html'))

@@ -19,7 +19,8 @@ export default defineConfig({
        */
       {
         // If you use electron-store, this will work - ESM format code snippets
-        'electron-store': 'const Store = require("electron-store"); export default Store;',
+        'electron-store':
+          'const Store = require("electron-store"); export default Store;',
       }
     ),
   ],

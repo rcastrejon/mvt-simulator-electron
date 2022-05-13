@@ -25,7 +25,8 @@ async function createWindow() {
       contextIsolation: false,
     },
     minWidth: 1000,
-    minHeight: 900,
+    minHeight: 860,
+    autoHideMenuBar: process.env['NODE_ENV'] == 'development',
   })
 
   if (app.isPackaged) {

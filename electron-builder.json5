@@ -27,4 +27,7 @@
     allowToChangeInstallationDirectory: true,
     deleteAppDataOnUninstall: false,
   },
+  portable: {
+    splashImage: 'dist/renderer/splash.bmp',
+  },
 }

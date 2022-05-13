@@ -45,16 +45,23 @@ function areaClass(area: MemoryArea, fragmented: boolean) {
     <template v-for="area in memoryAreas">
       <div class="row" :style="{ height: `${(area.size / totalSize) * 100}%` }">
         <div class="col-2 text-end">
-          <span>{{ area.location }}KB</span>
+          <div class="vstack h-100">
+            <span class="flex-grow-1">{{ area.location }}KB</span>
+            <span v-if="memoryAreas.at(-1) === area">{{ totalSize }}KB</span>
+          </div>
         </div>
         <div class="col text-center py-1">
           <div
-            class="h-100 rounded border-end border-dark border-4"
+            class="h-100 rounded border-end border-dark border-4 position-relative"
             :class="areaClass(area, isFragmented)"
+            style="display: grid; align-items: center"
           >
-            <span v-if="area instanceof OperatingSystem">OS</span>
+            <span class="fs-5" v-if="area instanceof OperatingSystem">OS</span>
             <span v-else-if="area instanceof FreeArea">Free Area</span>
             <span v-else>{{(area as Partition).process.id}}</span>
+            <span class="position-absolute" style="right: 0.25rem"
+              >{{ area.size }}KB</span
+            >
           </div>
         </div>
       </div>

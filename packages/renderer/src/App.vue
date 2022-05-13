@@ -10,6 +10,8 @@ import FreeAreasTable from './components/FreeAreasTable.vue'
 import PartitionsTable from './components/PartitionsTable.vue'
 import MemoryDiagram from './components/MemoryDiagram.vue'
 
+import { ipcRenderer } from 'electron'
+
 const processes = [
   new Process('A', 8, 1, 7),
   new Process('B', 14, 2, 7),
@@ -20,6 +22,7 @@ const processes = [
 
 const step = ref(0)
 const message = ref('Ready...')
+const finished = ref(false)
 
 const availableProcesses = reactive([...processes])
 
@@ -46,6 +49,7 @@ watch(step, (newStep) => {
   )
   if (processToAllocate) {
     if (allocateProcess(processToAllocate)) {
+      processToAllocate.arrivalStep = step.value
       const idx = availableProcesses.indexOf(processToAllocate)
       availableProcesses.splice(idx, 1)
       message.value = `Allocated process "${processToAllocate.id}"`
@@ -61,6 +65,9 @@ watch(step, (newStep) => {
     deallocatePartition(partitionToDeallocate)
     message.value = `Deallocated process "${partitionToDeallocate.process.id}"`
   }
+
+  if (availableProcesses.length < 1 && memoryLayout.value.partitions.length < 1)
+    finished.value = true
 })
 
 function allocateProcess(process: Process) {
@@ -107,6 +114,10 @@ function deallocatePartition(partition: Partition) {
       (fa) => fa !== residualArea
     )
 }
+
+function finish() {
+  ipcRenderer.invoke('reload-app')
+}
 </script>
 
 <template>
@@ -140,23 +151,65 @@ function deallocatePartition(partition: Partition) {
         <div class="vstack mt-2 align-items-center">
           <div>
             <button
-              v-if="step < 1"
-              type="button"
-              class="btn btn-success btn-sm"
-              @click="step++"
-            >
-              Start
-            </button>
-            <button
-              v-else
+              v-if="!finished"
               type="button"
               class="btn btn-primary btn-sm"
               @click="step++"
             >
               Step {{ step }}
             </button>
+            <button
+              v-else
+              type="button"
+              class="btn btn-success btn-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#finishedModal"
+            >
+              Finished
+            </button>
           </div>
           <span>{{ message }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="finishedModal"
+    tabindex="-1"
+    aria-labelledby="finishedModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="finishedModal">Attention</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          The simulation has finished, please select an action...
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            @click="ipcRenderer.invoke('reload-app')"
+          >
+            Restart
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            @click="ipcRenderer.invoke('quit-app')"
+          >
+            Quit
+          </button>
         </div>
       </div>
     </div>

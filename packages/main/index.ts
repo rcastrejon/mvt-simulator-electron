@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'os'
 import { join } from 'path'
 
@@ -25,8 +25,8 @@ async function createWindow() {
       contextIsolation: false,
     },
     minWidth: 1000,
-    minHeight: 860,
-    autoHideMenuBar: process.env['NODE_ENV'] == 'development',
+    minHeight: 870,
+    autoHideMenuBar: true,
   })
 
   if (app.isPackaged) {
@@ -74,4 +74,12 @@ app.on('activate', () => {
   } else {
     createWindow()
   }
+})
+
+ipcMain.handle('quit-app', () => {
+  app.quit()
+})
+
+ipcMain.handle('reload-app', () => {
+  win?.reload()
 })

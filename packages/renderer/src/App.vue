@@ -133,7 +133,7 @@ function deallocatePartition(partition: Partition) {
           </div>
         </div>
         <div class="card">
-          <div class="card-header">Partition table</div>
+          <div class="card-header">Partitions table</div>
           <div class="card-body overflow-hidden">
             <PartitionsTable :partitions="orderedMemoryLayout.partitions" />
           </div>

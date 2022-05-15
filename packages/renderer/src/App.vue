@@ -114,10 +114,6 @@ function deallocatePartition(partition: Partition) {
       (fa) => fa !== residualArea
     )
 }
-
-function finish() {
-  ipcRenderer.invoke('reload-app')
-}
 </script>
 
 <template>
@@ -158,7 +154,7 @@ function finish() {
     </div>
     <div class="row">
       <div class="col">
-        <div class="vstack mt-3 align-items-center">
+        <div class="vstack mt-2 align-items-center">
           <div>
             <button
               v-if="!finished"

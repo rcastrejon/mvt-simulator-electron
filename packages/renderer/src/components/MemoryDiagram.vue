@@ -41,7 +41,7 @@ function areaClass(area: MemoryArea, fragmented: boolean) {
 </script>
 
 <template>
-  <div class="flex-grow-1" style="min-height: 470px">
+  <div class="flex-grow-1">
     <template v-for="area in memoryAreas">
       <div class="row" :style="{ height: `${(area.size / totalSize) * 100}%` }">
         <div class="col-2 text-end">

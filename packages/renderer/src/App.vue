@@ -114,10 +114,6 @@ function deallocatePartition(partition: Partition) {
       (fa) => fa !== residualArea
     )
 }
-
-function finish() {
-  ipcRenderer.invoke('reload-app')
-}
 </script>
 
 <template>
@@ -129,20 +125,30 @@ function finish() {
       </div>
     </div>
     <div class="row flex-grow-1">
-      <div class="col">
-        <h5>Free areas table</h5>
-        <FreeAreasTable :free-areas="orderedMemoryLayout.freeAreas" />
-        <h5>Partition table</h5>
-        <PartitionsTable :partitions="orderedMemoryLayout.partitions" />
+      <div class="col d-grid gap-2" style="grid-auto-rows: 1fr">
+        <div class="card">
+          <div class="card-header">Free areas table</div>
+          <div class="card-body overflow-hidden">
+            <FreeAreasTable :free-areas="orderedMemoryLayout.freeAreas" />
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Partitions table</div>
+          <div class="card-body overflow-hidden">
+            <PartitionsTable :partitions="orderedMemoryLayout.partitions" />
+          </div>
+        </div>
       </div>
       <div class="col">
-        <div class="vstack h-100">
-          <h5 class="text-sm-center">Memory diagram</h5>
-          <MemoryDiagram
-            :free-areas="memoryLayout.freeAreas"
-            :partitions="memoryLayout.partitions"
-            :operating-system="memoryLayout.operatingSystem"
-          />
+        <div class="card h-100">
+          <div class="card-header">Memory diagram</div>
+          <div class="card-body d-flex">
+            <MemoryDiagram
+              :free-areas="memoryLayout.freeAreas"
+              :partitions="memoryLayout.partitions"
+              :operating-system="memoryLayout.operatingSystem"
+            />
+          </div>
         </div>
       </div>
     </div>

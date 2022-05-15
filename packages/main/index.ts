@@ -24,8 +24,8 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-    minWidth: 1000,
-    minHeight: 870,
+    minWidth: 1050,
+    minHeight: 880,
     autoHideMenuBar: true,
   })
 

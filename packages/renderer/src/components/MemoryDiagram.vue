@@ -41,7 +41,7 @@ function areaClass(area: MemoryArea, fragmented: boolean) {
 </script>
 
 <template>
-  <div class="flex-grow-1" style="min-height: 470px">
+  <div class="flex-grow-1">
     <template v-for="area in memoryAreas">
       <div class="row" :style="{ height: `${(area.size / totalSize) * 100}%` }">
         <div class="col-2 text-end">
@@ -52,7 +52,7 @@ function areaClass(area: MemoryArea, fragmented: boolean) {
         </div>
         <div class="col text-center py-1">
           <div
-            class="h-100 rounded border-end border-dark border-4 position-relative"
+            class="h-100 rounded border-end border-dark border-5 position-relative"
             :class="areaClass(area, isFragmented)"
             style="display: grid; align-items: center"
           >

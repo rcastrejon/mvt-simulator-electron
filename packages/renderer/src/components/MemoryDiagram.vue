@@ -52,7 +52,7 @@ function areaClass(area: MemoryArea, fragmented: boolean) {
         </div>
         <div class="col text-center py-1">
           <div
-            class="h-100 rounded border-end border-dark border-4 position-relative"
+            class="h-100 rounded border-end border-dark border-5 position-relative"
             :class="areaClass(area, isFragmented)"
             style="display: grid; align-items: center"
           >
